@@ -1,0 +1,22 @@
+{
+  "name": "gameengine",
+  "version": "1.0.0",
+  "description": "Winston's Javascript Game Engine",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ratamacue/winston-js.git"
+  },
+  "author": "David Ron & Winston",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ratamacue/winston-js/issues"
+  },
+  "homepage": "https://github.com/ratamacue/winston-js#readme",
+  "dependencies": {
+    "commander": "^2.9.0"
+  }
+}
