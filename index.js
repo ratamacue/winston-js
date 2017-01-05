@@ -88,7 +88,7 @@ var game = {
   room:getRoom("room1"),
   switchRoom:function(roomName){
     if(getRoom(roomName)) this.room=getRoom(roomName)
-    else console.log("Ruh Roh: This room doesn't exist.")
+    else console.log(`There is no such room, "${roomName}"`)
   },
   message:function(message){
     var lotsOfEquals = Array(process.stdout.columns).join("=");
@@ -102,7 +102,7 @@ var game = {
 
 function getRoom(roomId){
   var results = rooms.filter((i)=>i.id==roomId)
-  return results.length>0 ? results[0] : {}
+  return results[0]
 }
 
 function processInput(input) {
