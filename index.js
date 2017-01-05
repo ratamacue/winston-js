@@ -9,7 +9,7 @@ Array.prototype.flatMap = function(lambda) {
 var rooms = [
   {
     "id": "room1",
-    roomText: "There is a big door in front of you",
+    roomText: "There is a big door in front of you.",
     "actions":[
       {"look": (game)=>{game.message("The walls around you are made of bricks.  Low lighting is coming from a faint ceiling light.")}},
       {"open door": (game)=>{game.switchRoom("room2")}}
@@ -35,29 +35,67 @@ var rooms = [
   }
   , {
     "id":  "lockeddoor",
-    roomText: "You are in front of the door",
+    roomText: "You are in front of a door.",
     "actions":[
-      {"look": (game)=>{game.message("In front of you is the door,  what turned out to be shining was a padlock")}},
+      {"look": (game)=>{game.message("In front of you is a door,  what turned out to be shining, was a padlock.")}},
       {"inspect": (game)=>{game.switchRoom("lockeddoorsub")}},
       {"enter code": (game)=>{
-        if(game.argument() == "123"){
-          //They got the message correct.
+        if(game.argument() == "767784FGH56WHELA???#"){
+          game.message("You got the secret code!")
         }else{
           game.message("Nope, that's not it.")
         }
       }}
     ]
   }
+  , {
+    "id":  "leftturnbeginning",
+    roomText: "You are in front of a door.",
+    "actions":[
+      {"look": (game)=>{game.message("The door is very beat up,  chipped pieces of wood,  scratched door knob,  this door has seen better days.  You can hear an ominous scratching on the outside of the door.")}},
+      {"open door": (game)=>{game.switchRoom("leftsubroom")}},
+
+    ]
+  }
+  , {
+    "id":  "leftsubroom",
+    roomText: `Woah woah woah,  are you sure?  Did you even "look" at the door?  If so you understand the danger that could be behind this door...  So this is a chance to turn back,  open the door? `,
+    "actions":[
+      {"yes": (game)=>{
+        game.message("The door opened...  Out jumped a large creature,  before you can identify or even know what the thing was,  you were on the ground.  Your hand is soaked in blood,  it cut you.  There are claw marks,  meaning this could be pretty much every single animal that has paws.  This is not a very finite amount of animals,  this didn't even help ruling out the animal that just cut you.  But I just decided to write this anyway.");
+        game.switchRoom("thisisaroom")
+      }},
+      {"no": (game)=>{game.switchRoom("leftturnbeginning")}},
+      //{`Isn't this illogical to quote "look" if that's a normal word?  Or are you hinting towards some sort of higher power deciding if I "look" at the door?  Are you crazy?  Well it's not my business`: (game)=>{game.message("Indeed this isn't your business.")}},
+
+    ]
+  }
+  , {
+    "id":  "thisisaroom",
+    roomText: `Woah woah woah,  are you sure?  Did you even "look" at the door?  If so you understand the danger that could be behind this door...  So this is a chance to turn back,  open the door? `,
+    "actions":[
+      {"yes": (game)=>{
+        game.message("The door opened...  Out jumped a large creature,  before you can identify or even know what the thing was,  you were on the ground.  Your hand is soaked in blood,  it cut you.  There are claw marks,  meaning this could be pretty much every single animal that has paws.  This is not a very finite amount of animals,  this didn't even help ruling out the animal that just cut you.  But I just decided to write this anyway.")}},
+      {"no": (game)=>{game.switchRoom("leftturnbeginning")}},
+      //{`Isn't this illogical to quote "look" if that's a normal word?  Or are you hinting towards some sort of higher power deciding if I "look" at the door?  Are you crazy?  Well it's not my business`: (game)=>{game.message("Indeed this isn't your business.")}},
+
+    ]
+  }
 ]
+
 
 var game = {
   room:getRoom("room1"),
   switchRoom:function(roomName){
-    this.room=getRoom(roomName)
+    if(getRoom(roomName)) this.room=getRoom(roomName)
+    else console.log("Ruh Roh: This room doesn't exist.")
   },
   message:function(message){
     var lotsOfEquals = Array(process.stdout.columns).join("=");
     console.log(`\n${lotsOfEquals}\n${message}\n${lotsOfEquals}`);
+  },
+  argument:function(){
+    return this.args || ""
   }
 }
 
@@ -79,10 +117,13 @@ function processInput(input) {
     console.log("Teleporting to "+destination);
     game.switchRoom(destination);
   }else{
+    if(!game.room.actions.flatMap) console.log("Ruh Roh.  No Actions in this room.")
     var actionString = game.room.actions.flatMap(Object.keys).find(k=>thingThePersonTyped.startsWith(k));
     try{
-      game.args = thingThePersonTyped.split(actionString)[1].trim();
+      var typedArguments = thingThePersonTyped.split(actionString)[1]
+      if(typedArguments) game.args = typedArguments.trim();
     }catch(exception){
+      console.log(exception)
       game.args="";
     }
     var action = game.room.actions.filter((a)=>a[actionString]);
@@ -90,6 +131,7 @@ function processInput(input) {
       action[0][actionString](game)
     }else if (action != ""){
       console.log("That's not a thing you can do.")
+    }else{
     }
   }
   console.log(game.room.roomText)
