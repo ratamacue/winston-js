@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/ratamacue/winston-js#readme",
   "dependencies": {
-    "commander": "^2.9.0"
+    "commander": "^2.9.0",
+    "progress": "1.1.8"
   }
 }

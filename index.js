@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 
+var ProgressBar = require('node-progress').get();
+
 'use strict';
 
 Array.prototype.flatMap = function(lambda) {
     return Array.prototype.concat.apply([], this.map(lambda));
 };
+
+
 
 var rooms = [
   {
@@ -29,7 +33,7 @@ var rooms = [
     "actions":[
       {"look": (game)=>{game.message("In front of you,  all you can see is a dark straight hallway,  it's going on for what seems like miles.  Glancing to your right,  you see a short hallway with a door at the end.  Glancing to you left,  you see the same.  There's something off about the door to your right,  something on it is shiny and dangling off of it.")}},
       {"forward": (game)=>{game.switchRoom("darkroom")}},
-      {"left": (game)=>{game.switchRoom("chestroom")}},
+      {"left": (game)=>{game.switchRoom("leftturnbeginning")}},
       {"right": (game)=>{game.switchRoom("lockeddoor")}},
     ]
   }
@@ -63,32 +67,149 @@ var rooms = [
     "actions":[
       {"yes": (game)=>{
         game.message("The door opened...  Out jumped a large creature,  before you can identify or even know what the thing was,  you were on the ground.  Your hand is soaked in blood,  it cut you.  There are claw marks,  meaning this could be pretty much every single animal that has paws.  This is not a very finite amount of animals,  this didn't even help ruling out the animal that just cut you.  But I just decided to write this anyway.");
-        game.switchRoom("thisisaroom")
+        game.switchRoom("anotherroom")
       }},
       {"no": (game)=>{game.switchRoom("leftturnbeginning")}},
       //{`Isn't this illogical to quote "look" if that's a normal word?  Or are you hinting towards some sort of higher power deciding if I "look" at the door?  Are you crazy?  Well it's not my business`: (game)=>{game.message("Indeed this isn't your business.")}},
 
     ]
   }
-  , {
-    "id":  "thisisaroom",
-    roomText: `Woah woah woah,  are you sure?  Did you even "look" at the door?  If so you understand the danger that could be behind this door...  So this is a chance to turn back,  open the door? `,
+  ,
+  {
+    "id": "anotherroom",
+    roomText: "You need some banages...  You need to get back home.",
     "actions":[
-      {"yes": (game)=>{
-        game.message("The door opened...  Out jumped a large creature,  before you can identify or even know what the thing was,  you were on the ground.  Your hand is soaked in blood,  it cut you.  There are claw marks,  meaning this could be pretty much every single animal that has paws.  This is not a very finite amount of animals,  this didn't even help ruling out the animal that just cut you.  But I just decided to write this anyway.")}},
-      {"no": (game)=>{game.switchRoom("leftturnbeginning")}},
-      //{`Isn't this illogical to quote "look" if that's a normal word?  Or are you hinting towards some sort of higher power deciding if I "look" at the door?  Are you crazy?  Well it's not my business`: (game)=>{game.message("Indeed this isn't your business.")}},
+      {"home?": (game)=>{game.message("You're right.  We're far from home now.  In fact did you really ever wonder where we are anymore?  It's the last you remember,  after all I'm the narrator and I intentionally left shallow background to this story.")}},
+      {"look": (game)=>{game.message("What was behind the door turned out to be a room with metal a metal gate in front of you.  This gate isn't made from bars,  it's fully reinforced iron with no bars.  You cannot see anything going on.  The only lighting is from two torches to your left and right.  Looking up you see a trap door.")}},
+      {"open door": (game)=>{
+        game.message("It won't budge...  Suddenly behind you the door you opened seems to have slammed shut.  Not only this,  but quickly another iron door comes right up from under the door frame crushing it from bottom to top leaving no exit.")
+        game.switchRoom("anooooooootherroom");
+      }}
+    ]},
+    {
+      "id": "anooooooootherroom",
+      roomText: "You're trapped.",
+      "actions":[
+        {"wait": (game)=>{
+          game.message("You waited.  5 minutes passed,  it seemed like hours.  Your hand is still in so much pain.  Out the top of your room,  the trap door opens.  Falling on top of you is a pair of leather gloves and a yellow bandanna.")
+          game.switchRoom("battle");
 
-    ]
-  }
+      }},
+        {"scream": (game)=>{game.message("You yelled at the top of your lungs,  all this did was hurt your ears from the echo that had nowhere to escape.")}}
+      ]
+    },
+    {
+      "id": "battle",
+      roomText: "You can hear beeps.  Seems to be getting louder every second.  It might be counting down from 10...  Right,  the clothing.  You put on the gloves.  Where will you put the bandanna?  You couldn't decide so I decided for you,  you put it on your neck.",
+      "actions":[
+        {"wait": (game)=>{game.message("You waited.  And the metal gate opened.")
+        game.switchRoom("almostthere")
+      }}
+      ]
+    },
+    {
+      "id": "almostthere",
+      roomText: "Now the the gates have opened,  you can hear a crowd cheering.  They're shouting a name, Do you hide in the tiny room?  Or run out?",
+      "actions":[
+        {"look": (game)=>{game.message("You look out into a big arena.  Out there stands a man,  he raises his sword.  And the crowds get louder,  the cheering is understandable.  They're yelling 'Carnifex'")}},
+        {"run out": (game)=>{game.switchRoom("battle1")}},
+        {"hide": (game)=>{
+          game.message("You hid,  that got you nowhere.  You got pulled out by the hand, ouch!  And dragged into this large dusty arena.");
+          //game.battle(game, firstBattle)
+          game.switchRoom("battle1")
+      }}
+      ]
+    },
+    {
+      "id": "battle1",
+      roomText: "",
+      initialize: (game)=>{
+        game.battle = {
+          damage:0,
+          health:100,
+          timeStart : new Date(),
+          deathCheck : ()=>{
+            if(secondsSince(game.battle.timeStart) > 10) game.switchRoom("dead")
+          }
+
+        }
+
+      },
+      "actions":[
+        {"punch": (game)=>{
+          game.message(`PUNCH!!!.  It has no effect.  It has been ${secondsSince(game.battle.timeStart)} seconds`)
+          game.battle.deathCheck (game);
+        }},
+        {"kick": (game)=>{game.message("KICK!!!.  It has no effect.")}},
+        {"duck": (game)=>{game.message("DUCK!!!.  It has no effect.")}}
+      ]
+    },{
+      "id": "dead",
+      roomText: "You Are Dead",
+      "actions":[]
+    }
+
 ]
 
+function secondsSince(then){
+  var now = new Date();
+  return (now.getTime() - then.getTime() ) / 1000
+}
+
+
+var firstBattle = {
+  timeRemaining:0,
+  battleEvents : [
+    {
+      message:"First",
+      timeAllowed:100,
+      actions:[
+        (response)=>{
+
+        }
+      ],
+      handleResponse(player, response){}
+    },
+    {
+      message:"second",
+      timeAllowed:200,
+      actions:[
+        (response)=>{
+
+        }
+      ]
+    },
+
+  ]
+}
 
 var game = {
   room:getRoom("room1"),
   switchRoom:function(roomName){
-    if(getRoom(roomName)) this.room=getRoom(roomName)
+    if(getRoom(roomName)){
+      this.room=getRoom(roomName);
+      if(this.room.initialize) this.room.initialize(game);
+    }
     else console.log(`There is no such room, "${roomName}"`)
+  },
+  battle:function(game, battleDescription){
+    battleDescription.battleEvents.forEach(battleEvent=>{
+      console.log(battleEvent.message);
+
+      var bar = new ProgressBar(':bar', { total: 100 });
+      var timer = setInterval(function () {
+        bar.tick();
+        if (bar.complete) {
+          console.log('You Have Died');
+          clearInterval(timer);
+        }
+      }, 100);
+
+      process.stdout.write("BATTLE > ")
+      var stdin = process.openStdin();
+      stdin.addListener("data", bar.interrupt);
+    });
+
   },
   message:function(message){
     var lotsOfEquals = Array(process.stdout.columns).join("=");
@@ -109,7 +230,7 @@ function processInput(input) {
   var thingThePersonTyped = input.toString().trim()
 
   if(thingThePersonTyped === "?"){
-    console.log("Here are some things you can do in this room right now...")
+    console.log("Here are some things you can do right now...")
     var listOfThings = [].concat.apply([], game.room.actions.map(o=>Object.keys(o)))
     listOfThings.forEach(thing=>console.log("  * "+thing))
   }else if(thingThePersonTyped.startsWith("teleport")){
@@ -129,9 +250,8 @@ function processInput(input) {
     var action = game.room.actions.filter((a)=>a[actionString]);
     if(action && action[0]){
       action[0][actionString](game)
-    }else if (action != ""){
+    }else {
       console.log("That's not a thing you can do.")
-    }else{
     }
   }
   console.log(game.room.roomText)
