@@ -122,26 +122,39 @@ var rooms = [
     },
     {
       "id": "battle1",
-      roomText: "",
+      roomText: (game) => {
+        game.battle.deathCheck(game);
+        return "You Have "+ (game.battle.battleTime - ((new Date()).getTime() - game.battle.timeStart.getTime())/1000).toFixed(0) + " seconds."
+      },
       initialize: (game)=>{
         game.battle = {
           damage:0,
           health:100,
+          accuracy: 0.8,
           timeStart : new Date(),
+          battleTime: 10,
+          kicks:0,
           deathCheck : ()=>{
-            if(secondsSince(game.battle.timeStart) > 10) game.switchRoom("dead")
+            if(secondsSince(game.battle.timeStart) > game.battle.battleTime) game.switchRoom("dead")
           }
-
         }
 
       },
       "actions":[
         {"punch": (game)=>{
-          game.message(`PUNCH!!!.  It has no effect.  It has been ${secondsSince(game.battle.timeStart)} seconds`)
-          game.battle.deathCheck (game);
+          if(Math.random() > game.battle.accuracy){
+            game.message(`PUNCH!!!.  You Missed.`);
+          }else{
+            game.message(`PUNCH!!!.  You landed a hit, and it did damage!`);
+          }
         }},
-        {"kick": (game)=>{game.message("KICK!!!.  It has no effect.")}},
-        {"duck": (game)=>{game.message("DUCK!!!.  It has no effect.")}}
+        {"kick": (game)=>{
+          game.battle.kicks = game.battle.kicks +1;
+          game.message("KICK!!!.  You have kicked this many times: "+game.battle.kicks);
+        }},
+        {"duck": (game)=>{
+          game.message("DUCK!!!.  It has no effect.");
+        }}
       ]
     },{
       "id": "dead",
@@ -254,9 +267,17 @@ function processInput(input) {
       console.log("That's not a thing you can do.")
     }
   }
-  console.log(game.room.roomText)
+  var roomText = isFunction(game.room.roomText) ? game.room.roomText(game) : game.room.roomText
+  console.log(roomText)
   process.stdout.write("> ")
 };
+
+function isFunction(functionToCheck) {
+ var getType = {};
+ return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+}
+
+
 
 var stdin = process.openStdin();
 stdin.addListener("data", processInput);
