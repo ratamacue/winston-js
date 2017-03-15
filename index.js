@@ -129,12 +129,22 @@ var rooms = [
       initialize: (game)=>{
         game.battle = {
           damage:0,
-          health:100,
+          enemyHealth:10000,
           accuracy: 0.8,
           timeStart : new Date(),
           battleTime: 10,
-          kicks:0,
           deathCheck : ()=>{
+            /*
+            50% you will get hit and take some damage
+            |
+            |
+            V
+            25% chance they will attempt to hit you but you can dodge. (100% chance of dodge success)
+            react mode initiated
+            
+            50% they will attempt to hit you and immediately miss
+            */
+
             if(secondsSince(game.battle.timeStart) > game.battle.battleTime) game.switchRoom("dead")
           }
         }
@@ -145,15 +155,24 @@ var rooms = [
           if(Math.random() > game.battle.accuracy){
             game.message(`PUNCH!!!.  You Missed.`);
           }else{
-            game.message(`PUNCH!!!.  You landed a hit, and it did damage!`);
+            game.battle.damage=50 + game.battle.damage
+            game.message(`PUNCH!!!.  You landed a hit, and it did 50 damage!  Total damge dealt is ${game.battle.damage} out of ${game.battle.enemyHealth}`);
           }
         }},
         {"kick": (game)=>{
-          game.battle.kicks = game.battle.kicks +1;
-          game.message("KICK!!!.  You have kicked this many times: "+game.battle.kicks);
+          if(Math.random() > game.battle.accuracy){
+            game.message(`KICK!!!.  You Missed.`);
+          }else{
+            game.battle.damage=100 + game.battle.damage;
+            game.message(`KICK!!!.  You landed a hit, and it did 100 damage!  Total damge dealt is ${game.battle.damage} out of ${game.battle.enemyHealth}`);
+          }
         }},
-        {"duck": (game)=>{
-          game.message("DUCK!!!.  It has no effect.");
+        {"dodge": (game)=>{
+          if(game.battle.react){
+
+          }else{
+            game.message("What are you dodging?  Coward!")
+          }
         }}
       ]
     },{
