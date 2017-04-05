@@ -123,9 +123,16 @@ var rooms = [
     {
       "id": "battle1",
       roomText: (game) => {
-        game.battle.deathCheck(game);
-        return "You Have "+ (game.battle.battleTime - ((new Date()).getTime() - game.battle.timeStart.getTime())/1000).toFixed(0) + " seconds."
+        if(game.battle.timeUp(game)){
+          game.battle.enemyAttack();
+        }
+        if(game.battle.battleMessage){
+          return game.battle.battleMessage;
+        }else{
+          return "You Have "+ (game.battle.battleTime - ((new Date()).getTime() - game.battle.timeStart.getTime())/1000).toFixed(0) + " seconds."
+        }
       },
+      battleMessage: null,
       initialize: (game)=>{
         game.battle = {
           damage:0,
@@ -133,19 +140,29 @@ var rooms = [
           accuracy: 0.8,
           timeStart : new Date(),
           battleTime: 10,
-          deathCheck : ()=>{
-            /*
-            50% you will get hit and take some damage
-            |
-            |
-            V
-            25% chance they will attempt to hit you but you can dodge. (100% chance of dodge success)
-            react mode initiated
-            
-            50% they will attempt to hit you and immediately miss
-            */
+          playerTimeRestart : () => {
+            game.battle.battleMessage=null;
+            game.battle.timeStart = new Date() ;
+          },
+          timeUp : ()=>{
+            return secondsSince(game.battle.timeStart) > game.battle.battleTime;
+          },
+          enemyAttack: ()=>{
+            let enemyMiss = ()=>{
+              game.message( "Enemy has missed!" );
+              game.battle.playerTimeRestart();
+            }
+            let enemyHit = ()=>{
+              game.message("Look Out!");
+              game.battle.playerTimeRestart();
+              game.switchRoom("dodge");
+            }
 
-            if(secondsSince(game.battle.timeStart) > game.battle.battleTime) game.switchRoom("dead")
+            let options = [enemyMiss, enemyHit];
+            let decision = options[Math.floor(Math.random()*options.length)];
+
+            decision();
+
           }
         }
 
@@ -166,19 +183,28 @@ var rooms = [
             game.battle.damage=100 + game.battle.damage;
             game.message(`KICK!!!.  You landed a hit, and it did 100 damage!  Total damge dealt is ${game.battle.damage} out of ${game.battle.enemyHealth}`);
           }
-        }},
-        {"dodge": (game)=>{
-          if(game.battle.react){
-
-          }else{
-            game.message("What are you dodging?  Coward!")
-          }
         }}
+
       ]
     },{
       "id": "dead",
       roomText: "You Are Dead",
       "actions":[]
+    },
+    {
+      "id": "dodge",
+      roomText: (game)=>{
+        if(game.battle.timeUp()){
+            return game.message("Time up");
+        }else{
+          return "Watch out! Dodge!"
+        }
+      },
+      "actions":[
+        {"dodge": (game)=>{
+            game.message("You dodged the enemy");
+        }}
+      ]
     }
 
 ]
