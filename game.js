@@ -163,6 +163,9 @@ var rooms = [
 
             decision();
 
+          },
+          continue: ()=>{
+            game.switchRoom("battle1", {skipinit:true});
           }
         }
 
@@ -195,14 +198,19 @@ var rooms = [
       "id": "dodge",
       roomText: (game)=>{
         if(game.battle.timeUp()){
-            return game.message("Time up");
+            return "Time up";
+        }else if(  game.battle.dodge == true){
+            game.battle.dodge=false;
+            game.battle.continue();
+            return "You dodged the attack!";
         }else{
-          return "Watch out! Dodge!"
+          return "Watch out! Dodge!";
         }
+
       },
       "actions":[
         {"dodge": (game)=>{
-            game.message("You dodged the enemy");
+            game.battle.dodge = true;
         }}
       ]
     }
@@ -243,10 +251,11 @@ var firstBattle = {
 
 var game = {
   room:getRoom("room1"),
-  switchRoom:function(roomName){
+  switchRoom:function(roomName, opts){
+    opts = opts || {};
     if(getRoom(roomName)){
       this.room=getRoom(roomName);
-      if(this.room.initialize) this.room.initialize(game);
+      if(this.room.initialize && !opts.skipinit) this.room.initialize(game);
     }
     else console.log(`There is no such room, "${roomName}"`)
   },
