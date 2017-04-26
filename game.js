@@ -125,7 +125,11 @@ var rooms = [
       roomText: (game) => {
         if(game.battle.timeUp(game)){
           game.battle.enemyAttack();
+        }else if(game.battle.isBattleOver(game)){
+          console.log("The Game Is Over!")
         }
+
+
         if(game.battle.battleMessage){
           return game.battle.battleMessage;
         }else{
@@ -139,6 +143,7 @@ var rooms = [
           enemyHealth:10000,
           accuracy: 0.8,
           timeStart : new Date(),
+          userhealth : 10000,
           battleTime: 10,
           playerTimeRestart : () => {
             game.battle.battleMessage=null;
@@ -158,14 +163,26 @@ var rooms = [
               game.switchRoom("dodge");
             }
 
+            //There are two options
             let options = [enemyMiss, enemyHit];
+
+            //Randomly choose between the two
             let decision = options[Math.floor(Math.random()*options.length)];
 
+            //Call the one we chose
             decision();
 
           },
           continue: ()=>{
+            game.battle.playerTimeRestart();
             game.switchRoom("battle1", {skipinit:true});
+          },
+          isBattleOver: ()=>{
+            //console.log("end game check");
+            if (game.battle.enemyHealth < 1) {
+              return true;
+            }else if(game.battle.userhealth)
+            return false; //True if the game is over.
           }
         }
 
@@ -198,7 +215,9 @@ var rooms = [
       "id": "dodge",
       roomText: (game)=>{
         if(game.battle.timeUp()){
-            return "Time up";
+            game.battle.continue();
+            game.battle.userhealth = game.battle.userhealth - 1000;
+            return "You ran out of time!";
         }else if(  game.battle.dodge == true){
             game.battle.dodge=false;
             game.battle.continue();
