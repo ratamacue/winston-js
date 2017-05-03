@@ -126,21 +126,21 @@ var rooms = [
         if(game.battle.timeUp(game)){
           game.battle.enemyAttack();
         }else if(game.battle.isBattleOver(game)){
-          console.log("The Game Is Over!")
+          console.log("The Game Is Over!  You won!")
+          game.switchRoom("room1");
         }
 
 
         if(game.battle.battleMessage){
           return game.battle.battleMessage;
         }else{
-          return "You Have "+ (game.battle.battleTime - ((new Date()).getTime() - game.battle.timeStart.getTime())/1000).toFixed(0) + " seconds."
+          return "You Have "+ (game.battle.battleTime - ((new Date()).getTime() - game.battle.timeStart.getTime())/1000).toFixed(0) + " seconds and this much health "+game.battle.userhealth;
         }
       },
       battleMessage: null,
       initialize: (game)=>{
         game.battle = {
-          damage:0,
-          enemyHealth:10000,
+          enemyHealth:2000,
           accuracy: 0.8,
           timeStart : new Date(),
           userhealth : 10000,
@@ -181,7 +181,9 @@ var rooms = [
             //console.log("end game check");
             if (game.battle.enemyHealth < 1) {
               return true;
-            }else if(game.battle.userhealth)
+            }else if(game.battle.userhealth < 1){
+              game.switchRoom("dead");
+            }
             return false; //True if the game is over.
           }
         }
@@ -192,16 +194,16 @@ var rooms = [
           if(Math.random() > game.battle.accuracy){
             game.message(`PUNCH!!!.  You Missed.`);
           }else{
-            game.battle.damage=50 + game.battle.damage
-            game.message(`PUNCH!!!.  You landed a hit, and it did 50 damage!  Total damge dealt is ${game.battle.damage} out of ${game.battle.enemyHealth}`);
+            game.battle.enemyHealth = game.battle.enemyHealth - 50
+            game.message(`PUNCH!!!.  You landed a hit, and it did 50 damage!  The enemy's health is currently... ${game.battle.enemyHealth}`);
           }
         }},
         {"kick": (game)=>{
           if(Math.random() > game.battle.accuracy){
             game.message(`KICK!!!.  You Missed.`);
           }else{
-            game.battle.damage=100 + game.battle.damage;
-            game.message(`KICK!!!.  You landed a hit, and it did 100 damage!  Total damge dealt is ${game.battle.damage} out of ${game.battle.enemyHealth}`);
+            game.battle.enemyHealth = game.battle.enemyHealth - 100
+            game.message(`KICK!!!.  You landed a hit, and it did 100 damage!  The enemy's health is currently... ${game.battle.enemyHealth}`);
           }
         }}
 
@@ -216,7 +218,7 @@ var rooms = [
       roomText: (game)=>{
         if(game.battle.timeUp()){
             game.battle.continue();
-            game.battle.userhealth = game.battle.userhealth - 1000;
+            game.battle.userhealth = game.battle.userhealth - 3500;
             return "You ran out of time!";
         }else if(  game.battle.dodge == true){
             game.battle.dodge=false;
