@@ -234,7 +234,16 @@ var rooms = [
             game.battle.dodge = true;
         }}
       ]
-    }
+    },
+    {
+      "id": "after_battle",
+      roomText: "You killed him.  Some of the crowd is cheering out of happiness,  and others are cheering in shock of someone...  Like you,  killing him.",
+      "actions":[
+        {"look": (game)=>{game.message("You looked at the dead body.  There were no cuts,  I think you might've knocked him out.  Studies show that a knock out from a punch only lasts 30 seconds.  So I'd suggest running.")}},
+        {""
+      }}
+      ]
+    },
 
 ]
 
