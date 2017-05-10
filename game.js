@@ -126,8 +126,16 @@ var rooms = [
         if(game.battle.timeUp(game)){
           game.battle.enemyAttack();
         }else if(game.battle.isBattleOver(game)){
-          console.log("The Game Is Over!  You won!")
-          game.switchRoom("room1");
+          console.log("The battle Is Over!  You won!")
+          console.log("The last action was: "+game.lastAction);
+          if(game.lastAction === "punch"){
+            game.hardMode = true
+            game.switchRoom("after_battle_hardmode") ;
+          }else{
+            game.hardMode = false
+            game.switchRoom("after_battle_kick") ;
+          }
+
         }
 
 
@@ -236,15 +244,60 @@ var rooms = [
       ]
     },
     {
-      "id": "after_battle",
-      roomText: "You killed him.  Some of the crowd is cheering out of happiness,  and others are cheering in shock of someone...  Like you,  killing him.",
+      "id": "after_battle_hardmode",
+      roomText: (game)=>{
+        return "You've defeated.  Some of the crowd is cheering out of happiness, and others are cheering in shock of someone like you, winning against him.";
+      },
       "actions":[
-        {"look": (game)=>{game.message("You looked at the dead body.  There were no cuts,  I think you might've knocked him out.  Studies show that a knock out from a punch only lasts 30 seconds.  So I'd suggest running.")}},
-        {""
-      }}
+        {"look": (game)=>{
+
+          game.message("You looked at the dead body.  There were no cuts, I think you might've knocked him out, his face has blood on it, it's yours though, your final punch seemed to have opened your cut. --FUN FACT-- Studies show that a knock out from a punch only lasts 30 seconds.  So I'd suggest running.  P.S. Cholorform actually takes two minutes to kick in, in case that was a question.");
+        }},
+        {"listen": (game)=>{
+          game.message(`The crowd cheered "Volemus sanguinem" unless you know Latin good luck figuring that out.`)
+        }},
+        {"leave": (game)=>{
+          game.switchRoom(`outside`)
+        }},
+        {"pick up body": (game)=>{
+          game.switchRoom("kill?")
+        }}
+
       ]
     },
+    {
+      "id": "after_battle_kick",
+      roomText: (game)=>{
+        return "You killed him.  Some of the crowd is cheering out of happiness, and others are cheering in shock of someone like you, killing him.";
+      },
+      "actions":[
+        {"look": (game)=>{
 
+          game.message("Your final kick hit his head, it appears you snapped it...  You won't be hearing from him again.  Well it's not like you could understand him.");
+        }},
+        {"listen": (game)=>{
+          game.message(`The crowd cheered "Volemus sanguinem" unless you know Latin good luck figuring that out.`)
+        }},
+        {"": (game)=>{
+          game.switchRoom(`outside`)
+        }}
+
+      ]
+    },
+    {
+      "id": "kill?",
+      roomText: (game)=>{
+        console.log("The last action was: "+game.lastAction);
+        return "You killed him.  Some of the crowd is cheering out of happiness, and others are cheering in shock of someone like you, killing him.";
+      },
+      "actions":[
+        {"look at croud": (game)=>{
+
+          game.message(`This crowd seems to be very very rowdy, but it sounds like there are two different words being yelled. One is being drowned out, you hear "interfeces hominem"...  More of them have their thumbs down than up, what does this mean?  I don't know, you tell me.  Just kill him or don't, you decide.`);
+        }}
+
+      ]
+    },
 ]
 
 function secondsSince(then){
@@ -325,6 +378,7 @@ function getRoom(roomId){
 
 function processInput(input) {
   var thingThePersonTyped = input.toString().trim()
+  game.lastAction = thingThePersonTyped;
 
   if(thingThePersonTyped === "?"){
     console.log("Here are some things you can do right now...")
