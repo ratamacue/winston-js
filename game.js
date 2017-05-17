@@ -127,7 +127,6 @@ var rooms = [
           game.battle.enemyAttack();
         }else if(game.battle.isBattleOver(game)){
           console.log("The battle Is Over!  You won!")
-          console.log("The last action was: "+game.lastAction);
           if(game.lastAction === "punch"){
             game.hardMode = true
             game.switchRoom("after_battle_hardmode") ;
@@ -246,7 +245,7 @@ var rooms = [
     {
       "id": "after_battle_hardmode",
       roomText: (game)=>{
-        return "You've defeated.  Some of the crowd is cheering out of happiness, and others are cheering in shock of someone like you, winning against him.";
+        return "You've defeated the unknown enemy.  Some of the crowd is cheering out of happiness, and others are cheering in shock of someone like you, winning against him.";
       },
       "actions":[
         {"look": (game)=>{
@@ -260,7 +259,12 @@ var rooms = [
           game.switchRoom(`outside`)
         }},
         {"pick up body": (game)=>{
-          game.switchRoom("kill?")
+          if(game.hardMode){
+            game.switchRoom("kill?")
+          }else{
+            game.message(`He's dead.`)
+          }
+
         }}
 
       ]
@@ -268,7 +272,7 @@ var rooms = [
     {
       "id": "after_battle_kick",
       roomText: (game)=>{
-        return "You killed him.  Some of the crowd is cheering out of happiness, and others are cheering in shock of someone like you, killing him.";
+        return "You killed him.  Some of the crowd is cheering out of happiness, and others are cheering in shock of someone like you, killing him.  They tossed you some bandages and you healed your hand good as new.";
       },
       "actions":[
         {"look": (game)=>{
@@ -276,7 +280,7 @@ var rooms = [
           game.message("Your final kick hit his head, it appears you snapped it...  You won't be hearing from him again.  Well it's not like you could understand him.");
         }},
         {"listen": (game)=>{
-          game.message(`The crowd cheered "Volemus sanguinem" unless you know Latin good luck figuring that out.`)
+          game.message(`The crowd cheered "volemus sanguinem" unless you know Latin good luck figuring that out.`)
         }},
         {"": (game)=>{
           game.switchRoom(`outside`)
@@ -287,16 +291,24 @@ var rooms = [
     {
       "id": "kill?",
       roomText: (game)=>{
-        console.log("The last action was: "+game.lastAction);
-        return "You killed him.  Some of the crowd is cheering out of happiness, and others are cheering in shock of someone like you, killing him.";
+        return "Oh, decisions, decisions.";
       },
       "actions":[
-        {"look at croud": (game)=>{
+        {"look at crowd": (game)=>{
 
-          game.message(`This crowd seems to be very very rowdy, but it sounds like there are two different words being yelled. One is being drowned out, you hear "interfeces hominem"...  More of them have their thumbs down than up, what does this mean?  I don't know, you tell me.  Just kill him or don't, you decide.`);
+          game.message(`This crowd seems to be very very rowdy, but it sounds like there are two different words being yelled. One is being drowned out, you hear "interfeces Carnificem"...  More of them have their thumbs down than up, what does this mean?  I don't know, you tell me.  Just kill him or don't, you decide.  If he's even alive anyways.`);
+        }},
+        {"kill": (game)=>{
+          game.hardMode = false
+          game.message(`You killed him.  If he wasn't already dead.  Someone in the crowd tossed you some bandages.  The crowd roars in excitement.  You put the bandages on your hand and now it is healed instantly for some reason.`)
+          game.switchRoom("after_battle_hardmode")
+        }},
+        {"don't kill": (game)=>{
+          game.hardMode = true
+          game.message(`You left his body alone.  The crowd seems to be very angry about this.`)
+          game.switchRoom("after_battle_hardmode")
         }}
-
-      ]
+    ]
     },
 ]
 
